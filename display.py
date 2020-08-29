@@ -11,16 +11,20 @@ def extractfeatures(img):
     corners = np.int0(corners)
     return corners
 
-#function for matching features
+#function for matching features with the previous frame
 
-def matcher(frame,f):
-    
+def matcher(frame,f,last):
+    bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+
     orb = cv2.ORB_create(500)
     if frame is not None:
 
         kps = [cv2.KeyPoint(x=f[0][0],y=f[0][1],_size=20)]
         kps, des = orb.compute(frame,kps)
-       
+        if last is not None:
+            matches = bf.match(des,last)
+            print(matches)
+
 
     return kps,des
 
@@ -28,17 +32,24 @@ def matcher(frame,f):
 
 
 
+#This is main, but we at capeie corp belive that main functions are not cool, also frick the lidars
+
 while(cap.isOpened()):
     ret,frame = cap.read()
     last = None
 
     if ret == True:
         
-        frame = cv2.resize(frame,(800,540))
+        frame = cv2.resize(frame,(540,540))
         corners = extractfeatures(frame)
         for i in corners:
             x,y = i.ravel()
-            kps,des = matcher(frame,i)
+            if last is None:
+                kps,des = matcher(frame,i,None)
+            else:
+                kps,des = matcher(frame,i,last[1])
+            last = kps,des
+
             cv2.circle(frame,(x,y),3,(0,255,255),-1)
         cv2.imshow('Frame',frame)
         
