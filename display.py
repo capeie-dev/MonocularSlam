@@ -24,6 +24,10 @@ def matcher(frame,f,last):
         if last is not None:
             matches = bf.knnMatch(des,last,2)
             print(matches)
+            good = []
+            for m,n in matches:
+                if m.distance < 0.75*n.distance:
+                    good.append([m])
             
     
     return kps,des,matches
