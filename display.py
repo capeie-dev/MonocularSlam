@@ -3,6 +3,11 @@ import numpy as np
 
 
 cap = cv2.VideoCapture('test.mp4')
+index_params = dict(algorithm = 1, trees = 5)
+search_params = dict(checks=50)
+flann = cv2.FlannBasedMatcher(index_params,search_params)
+orb = cv2.ORB_create(500)
+bf = cv2.BFMatcher()
 
 #feautre extractor
 def extractfeatures(img):
@@ -14,22 +19,18 @@ def extractfeatures(img):
 #function for matching features with the previous frame
 
 def matcher(frame,f,last):
-    bf = cv2.BFMatcher_create()
-
     matches = None
-    orb = cv2.ORB_create(1000)
-    if frame is not None:
-        kps = orb.detect(frame,None)
-        kps, des = orb.compute(frame,kps)
+   
+    if frame is not None:        
+        kps, des = orb.compute(frame,f)
         if last is not None:
-            matches = bf.knnMatch(des,last,2)
-            print(matches)
-            good = []
+            matches = bf.knnMatch(des,last,k=2)
+        
+        print(matches)
+        if matches is not None:
             for m,n in matches:
-                if m.distance < 0.75*n.distance:
-                    good.append([m])
+                
             
-    
     return kps,des,matches
 
 
@@ -37,24 +38,33 @@ def matcher(frame,f,last):
 
 
 #This is main, but we at capeie corp belive that main functions are not cool, also frick the lidars
-
+last = None
 while(cap.isOpened()):
     ret,frame = cap.read()
-    last = None
-
+    
+    
+    kpframe = []
+    
     if ret == True:
         
         frame = cv2.resize(frame,(540,540))
         corners = extractfeatures(frame)
         for i in corners:
             x,y = i.ravel()
-            if last is None:
-                kps,des,matches = matcher(frame,i,None)
-            else:
-                kps,des,matches = matcher(frame,i,last['des'])
-            last = {'kps':kps,'des':des,'matches':matches}
+            storer = cv2.KeyPoint(x,y,20)
+            kpframe.append(storer)
+            
 
             cv2.circle(frame,(x,y),3,(0,255,255),-1)
+        
+        if last is None:
+            kps,des,matches = matcher(frame,kpframe,None)
+            
+        else:
+            kps,des,matches = matcher(frame,kpframe,last['des'])
+        
+        last = {'kps':kpframe,'des':des,'matches':matches}
+        
         cv2.imshow('Frame',frame)
         
         if cv2.waitKey(25) & 0xFF == ord('q'): 
