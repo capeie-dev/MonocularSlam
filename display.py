@@ -14,20 +14,18 @@ def extractfeatures(img):
 #function for matching features with the previous frame
 
 def matcher(frame,f,last):
-    bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
-    matches = None
-    orb = cv2.ORB_create(500)
-    if frame is not None:
+    bf = cv2.BFMatcher_create()
 
-        kps = [cv2.KeyPoint(x=f[0][0],y=f[0][1],_size=20)]
+    matches = None
+    orb = cv2.ORB_create(1000)
+    if frame is not None:
+        kps = orb.detect(frame,None)
         kps, des = orb.compute(frame,kps)
         if last is not None:
-            matches = bf.knnMatch(des,last,k=2)
-            if matches is not None:
-                for m in matches:
-                    for n in m:
-                        print(n.distance)
-
+            matches = bf.knnMatch(des,last,2)
+            print(matches)
+            
+    
     return kps,des,matches
 
 
@@ -49,8 +47,8 @@ while(cap.isOpened()):
             if last is None:
                 kps,des,matches = matcher(frame,i,None)
             else:
-                kps,des,matches = matcher(frame,i,last[1])
-            last = kps,des,matches
+                kps,des,matches = matcher(frame,i,last['des'])
+            last = {'kps':kps,'des':des,'matches':matches}
 
             cv2.circle(frame,(x,y),3,(0,255,255),-1)
         cv2.imshow('Frame',frame)
