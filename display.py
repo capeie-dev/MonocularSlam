@@ -33,7 +33,7 @@ def matcher(frame,f,last1,last2):
                     good.append([m])
     return kps,des,matches,good
 
-
+#funtion to extract the matched points
 def goodpointextractor(good,kp,last):
     ptlists = []
     for g in good:
