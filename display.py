@@ -2,10 +2,7 @@ import cv2
 import numpy as np 
 
 
-cap = cv2.VideoCapture('test6.mp4')
-index_params = dict(algorithm = 1, trees = 5)
-search_params = dict(checks=50)
-flann = cv2.FlannBasedMatcher(index_params,search_params)
+cap = cv2.VideoCapture('./buttets/test6.mp4')
 orb = cv2.ORB_create(100)
 bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=False)
 
