@@ -2,7 +2,7 @@ import cv2
 import numpy as np 
 
 
-cap = cv2.VideoCapture('test7.mp4')
+cap = cv2.VideoCapture('test6.mp4')
 index_params = dict(algorithm = 1, trees = 5)
 search_params = dict(checks=50)
 flann = cv2.FlannBasedMatcher(index_params,search_params)
