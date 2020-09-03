@@ -1,15 +1,16 @@
 import cv2
 import numpy as np 
+from skimage.measure import ransac
+from skimage.transform import FundamentalMatrixTransform
 
-
-cap = cv2.VideoCapture('./buttets/test6.mp4')
+cap = cv2.VideoCapture('./buttets/test.mp4')
 orb = cv2.ORB_create(100)
 bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=False)
 
 #feautre extractor
 def extractfeatures(img):
     gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-    corners = cv2.goodFeaturesToTrack(gray,3000,0.01,0.1)
+    corners = cv2.goodFeaturesToTrack(gray,1000,0.01,3)
     corners = np.int0(corners)
     return corners
 
@@ -42,6 +43,16 @@ def goodpointextractor(good,kp,last):
             ptlists.append([src,dst])
         except:
             pass
+    test = np.array(ptlists)
+    model, inliers = ransac((test[:, 0],test[:, 1]),
+                        FundamentalMatrixTransform, min_samples=8,
+                        residual_threshold=1, max_trials=5000)
+    test2 = test[inliers]
+    ptlists = []
+    for lit in test2:
+        src = (lit[0][0],lit[0][1])
+        dst = (lit[1][0],lit[1][1])
+        ptlists.append([src,dst])
     return ptlists
 
 #This is main, but we at capeie corp belive that main functions are not cool, also frick the lidars
@@ -65,7 +76,7 @@ while(cap.isOpened()):
             kps,des,matches,ptlists= matcher(frame,kpframe,None,None)
             
         else:
-            kps,des,matches,good = matcher(frame,kpframe,last['des'],last['kps'])    
+            kps,des,matches,good =matcher(frame,kpframe,last['des'],last['kps'])    
             ptlists = goodpointextractor(good,kps,last['kps'])
             for p in ptlists:
                 cv2.circle(frame,p[0],3,(0,0,255),1)
